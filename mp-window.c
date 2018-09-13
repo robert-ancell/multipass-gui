@@ -3,9 +3,10 @@
 
 struct _MpWindow
 {
-    GtkWindow  parent_instance;
+    GtkWindow      parent_instance;
 
-    GtkWidget *instances_listbox;
+    GtkListBox    *instances_listbox;
+    GtkListBoxRow *add_row;
 };
 
 G_DEFINE_TYPE (MpWindow, mp_window, GTK_TYPE_WINDOW)
@@ -15,7 +16,7 @@ add_row (MpWindow *window, const gchar *name)
 {
     MpInstanceRow *row = mp_instance_row_new (name);
     gtk_widget_show (GTK_WIDGET (row));
-    gtk_container_add (GTK_CONTAINER (window->instances_listbox), GTK_WIDGET (row));
+    gtk_list_box_insert (window->instances_listbox, GTK_WIDGET (row), gtk_list_box_row_get_index (window->add_row));
 }
 
 void
@@ -25,6 +26,7 @@ mp_window_class_init (MpWindowClass *klass)
 
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-window.ui");
 
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, add_row);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_listbox);
 }
 

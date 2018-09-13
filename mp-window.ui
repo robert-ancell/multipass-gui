@@ -14,6 +14,19 @@
         <child>
           <object class="GtkListBox" id="instances_listbox">
             <property name="visible">True</property>
+            <child>
+              <object class="GtkListBoxRow" id="add_row">
+                <property name="visible">True</property>
+                <property name="selectable">False</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="margin">12</property>
+                    <property name="icon_name">list-add-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
