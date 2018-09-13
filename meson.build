@@ -8,6 +8,7 @@ resources = gnome.compile_resources('mp-resources',
                                     'mp-resources.gresource.xml')
 executable ('multipass-gui',
             [ 'main.c',
+              'mp-client.c',
               'mp-instance-row.c',
               'mp-launch-dialog.c',
               'mp-window.c' ] + resources,
