@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="MpLaunchDialog" parent="GtkDialog">
+    <property name="title" translatable="yes">Launch</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkEntry" id="name_entry">
+            <property name="visible">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -9,6 +9,7 @@ resources = gnome.compile_resources('mp-resources',
 executable ('multipass-gui',
             [ 'main.c',
               'mp-instance-row.c',
+              'mp-launch-dialog.c',
               'mp-window.c' ] + resources,
             dependencies: [ gtk_dep ],
             install: true)
