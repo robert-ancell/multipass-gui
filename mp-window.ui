@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="MpWindow" parent="GtkWindow">
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkListBox" id="instances_listbox">
+            <property name="visible">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
   </template>
 </interface>

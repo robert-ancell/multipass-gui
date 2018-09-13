@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="MpInstanceRow" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkLabel" id="label">
+        <property name="visible">True</property>
+      </object>
+    </child>
+  </template>
+</interface>
