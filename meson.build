@@ -3,6 +3,7 @@ project ('multipass-gui', 'c')
 gnome = import ('gnome')
 
 gtk_dep = dependency ('gtk+-3.0')
+vte_dep = dependency ('vte-2.91')
 
 resources = gnome.compile_resources('mp-resources',
                                     'mp-resources.gresource.xml')
@@ -12,5 +13,5 @@ executable ('multipass-gui',
               'mp-instance-row.c',
               'mp-launch-dialog.c',
               'mp-window.c' ] + resources,
-            dependencies: [ gtk_dep ],
+            dependencies: [ gtk_dep, vte_dep ],
             install: true)

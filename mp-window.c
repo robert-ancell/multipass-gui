@@ -1,3 +1,5 @@
+#include <vte/vte.h>
+
 #include "mp-client.h"
 #include "mp-instance-row.h"
 #include "mp-launch-dialog.h"
@@ -7,8 +9,9 @@ struct _MpWindow
 {
     GtkWindow      parent_instance;
 
-    GtkListBox    *instances_listbox;
     GtkListBoxRow *add_row;
+    GtkBox        *image_box;
+    GtkListBox    *instances_listbox;
 
     GCancellable  *cancellable;
     MpClient      *client;
@@ -58,6 +61,7 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-window.ui");
 
     gtk_widget_class_bind_template_child (widget_class, MpWindow, add_row);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, image_box);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_listbox);
 
     gtk_widget_class_bind_template_callback (widget_class, instance_row_activated_cb);
@@ -84,6 +88,10 @@ void
 mp_window_init (MpWindow *window)
 {
     gtk_widget_init_template (GTK_WIDGET (window));
+
+    GtkWidget *terminal = vte_terminal_new ();
+    gtk_widget_show (terminal);
+    gtk_container_add (GTK_CONTAINER (window->image_box), terminal);
 
     window->cancellable = g_cancellable_new ();
     window->client = mp_client_new ();
