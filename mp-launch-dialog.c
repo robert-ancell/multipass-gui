@@ -76,11 +76,16 @@ find_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 MpLaunchDialog *
 mp_launch_dialog_new (MpClient *client)
 {
-    MpLaunchDialog *dialog = g_object_new (MP_TYPE_LAUNCH_DIALOG, NULL);
+    MpLaunchDialog *dialog = g_object_new (MP_TYPE_LAUNCH_DIALOG,
+                                           "use-header-bar", 1,
+                                           NULL);
 
     dialog->cancellable = g_cancellable_new ();
     dialog->client = g_object_ref (client);
     mp_client_find_async (dialog->client, dialog->cancellable, find_cb, dialog);
+
+    g_autofree gchar *name = mp_client_generate_name (client);
+    gtk_entry_set_text (dialog->name_entry, name);
 
     return dialog;
 }

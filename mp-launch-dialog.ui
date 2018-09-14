@@ -1,22 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="MpLaunchDialog" parent="GtkDialog">
-    <property name="title" translatable="yes">Launch</property>
+    <property name="title" translatable="yes">Create Image</property>
+    <property name="resizable">False</property>
+    <child type="action">
+      <object class="GtkButton" id="launch_button">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">_Launch</property>
+        <property name="use_underline">True</property>
+        <property name="can_default">True</property>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="cancel_button">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">_Cancel</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <child>
-          <object class="GtkEntry" id="name_entry">
+          <object class="GtkGrid">
             <property name="visible">True</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkComboBox" id="image_combo">
-            <property name="visible">True</property>
-            <property name="model">image_model</property>
+            <property name="border_width">18</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Name</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="name_entry">
+                <property name="visible">True</property>
+                <property name="hexpand">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Image</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="image_combo">
+                <property name="visible">True</property>
+                <property name="model">image_model</property>
+                <property name="hexpand">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
           </object>
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-5" default="true">launch_button</action-widget>
+      <action-widget response="-6">cancel_button</action-widget>
+    </action-widgets>
   </template>
   <object class="GtkListStore" id="image_model">
     <columns>

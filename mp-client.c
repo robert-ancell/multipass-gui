@@ -23,6 +23,12 @@ mp_client_new (void)
     return g_object_new (MP_TYPE_CLIENT, NULL);
 }
 
+gchar *
+mp_client_generate_name (MpClient *client)
+{
+    return g_strdup ("adjective-name");
+}
+
 static void
 list_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
