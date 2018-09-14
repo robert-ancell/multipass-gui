@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Multipass
+Comment=Easily launch Ubuntu virtual machines
+Keywords=multipass;vm;virtual;machine;ubuntu
+Exec=multipass-gui
+#Icon=scanner
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GNOME;GTK;
