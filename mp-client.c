@@ -23,10 +23,30 @@ mp_client_new (void)
     return g_object_new (MP_TYPE_CLIENT, NULL);
 }
 
+static gchar *
+get_random_word (const gchar *resource)
+{
+    g_autofree gchar *uri = g_strdup_printf ("resource:%s", resource);
+    g_autoptr(GFile) file = g_file_new_for_uri (uri);
+    g_autofree gchar *contents = NULL;
+    g_autoptr(GError) error = NULL;
+    if (!g_file_load_contents (file, NULL, &contents, NULL, NULL, &error)) {
+        g_warning ("Failed to read word list %s: %s\n", resource, error->message);
+        return NULL;
+    }
+
+    g_auto(GStrv) words = g_strsplit (contents, "\n", -1);
+    int i = g_random_int_range (0, g_strv_length (words));
+
+    return g_strdup (words[i]);
+}
+
 gchar *
 mp_client_generate_name (MpClient *client)
 {
-    return g_strdup ("adjective-name");
+    g_autofree gchar *adjective = get_random_word ("/com/ubuntu/multipass/adjectives.txt");
+    g_autofree gchar *name = get_random_word ("/com/ubuntu/multipass/names.txt");
+    return g_strdup_printf ("%s-%s", adjective, name);
 }
 
 static void

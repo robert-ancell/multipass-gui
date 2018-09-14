@@ -4,5 +4,7 @@
     <file preprocess="xml-stripblanks">mp-instance-row.ui</file>
     <file preprocess="xml-stripblanks">mp-launch-dialog.ui</file>
     <file preprocess="xml-stripblanks">mp-window.ui</file>
+    <file>adjectives.txt</file>
+    <file>names.txt</file>
   </gresource>
 </gresources>
