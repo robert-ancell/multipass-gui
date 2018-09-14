@@ -1,3 +1,4 @@
+#include "mp-client.h"
 #include "mp-instance-row.h"
 #include "mp-launch-dialog.h"
 #include "mp-window.h"
@@ -8,6 +9,9 @@ struct _MpWindow
 
     GtkListBox    *instances_listbox;
     GtkListBoxRow *add_row;
+
+    GCancellable  *cancellable;
+    MpClient      *client;
 };
 
 G_DEFINE_TYPE (MpWindow, mp_window, GTK_TYPE_WINDOW)
@@ -31,10 +35,25 @@ instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
     }
 }
 
+static void
+mp_window_dispose (GObject *object)
+{
+    MpWindow *window = MP_WINDOW (object);
+
+    g_cancellable_cancel (window->cancellable);
+    g_clear_object (&window->cancellable);
+    g_clear_object (&window->client);
+
+    G_OBJECT_CLASS (mp_window_parent_class)->dispose (object);
+}
+
 void
 mp_window_class_init (MpWindowClass *klass)
 {
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+    object_class->dispose = mp_window_dispose;
 
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-window.ui");
 
@@ -44,13 +63,31 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_bind_template_callback (widget_class, instance_row_activated_cb);
 }
 
+static void
+list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
+{
+    MpWindow *window = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_auto(GStrv) instance_names = mp_client_list_finish (window->client, result, &error);
+    if (instance_names == NULL) {
+        g_printerr ("Failed to get instances: %s\n", error->message);
+        return;
+    }
+
+    for (int i = 0; instance_names[i] != NULL; i++) {
+        add_row (window, instance_names[i]);
+    }
+}
+
 void
 mp_window_init (MpWindow *window)
 {
     gtk_widget_init_template (GTK_WIDGET (window));
 
-    add_row (window, "gallant-moonfish");
-    add_row (window, "enriching-mooneye");
+    window->cancellable = g_cancellable_new ();
+    window->client = mp_client_new ();
+    mp_client_list_async (window->client, window->cancellable, list_cb, window);
 }
 
 MpWindow *

@@ -36,9 +36,17 @@ list_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    g_printerr ("'%s'\n", output);
+    g_auto(GStrv) lines = g_strsplit (output, "\n", -1);
+    g_autoptr(GPtrArray) instance_names = g_ptr_array_new ();
+    for (int i = 1; lines[i] != NULL; i++) {
+        g_auto(GStrv) tokens = g_strsplit (lines[i], " ", -1);
+        if (tokens[0] == NULL)
+            continue;
+        g_ptr_array_add (instance_names, g_strdup (tokens[0]));
+    }
+    g_ptr_array_add (instance_names, NULL);
 
-    g_task_return_pointer (task, NULL, NULL);
+    g_task_return_pointer (task, g_steal_pointer (&instance_names->pdata), (GDestroyNotify) g_strfreev);
 }
 
 void
@@ -55,8 +63,9 @@ mp_client_list_async (MpClient *client, GCancellable *cancellable, GAsyncReadyCa
     g_subprocess_communicate_utf8_async (subprocess, NULL, cancellable, list_cb, g_steal_pointer (&task));
 }
 
-GPtrArray *
-mp_client_list_finish (MpClient *client, GError **error)
+gchar **
+mp_client_list_finish (MpClient *client, GAsyncResult *result, GError **error)
 {
-    return NULL;
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), client), NULL);
+    return g_task_propagate_pointer (G_TASK (result), error);
 }
