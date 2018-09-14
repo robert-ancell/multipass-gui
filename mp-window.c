@@ -37,7 +37,15 @@ instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
     if (row == window->add_row) {
         MpLaunchDialog *dialog = mp_launch_dialog_new (window->client);
         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
-        gtk_dialog_run (GTK_DIALOG (dialog));
+
+        if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+            const gchar *name = mp_launch_dialog_get_name (dialog);
+            g_autofree gchar *image_name = mp_launch_dialog_get_image_name (dialog);
+
+            mp_client_launch_async (window->client, name, image_name, window->cancellable, NULL, window);
+            add_row (window, name);
+        }
+
         gtk_widget_destroy (GTK_WIDGET (dialog));
     }
 }

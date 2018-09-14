@@ -29,4 +29,15 @@ gchar   **mp_client_find_finish   (MpClient            *client,
                                    GAsyncResult        *result,
                                    GError             **error);
 
+void      mp_client_launch_async  (MpClient            *client,
+                                   const gchar         *name,
+                                   const gchar         *image,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             callback_data);
+
+gboolean  mp_client_launch_finish (MpClient            *client,
+                                   GAsyncResult        *result,
+                                   GError             **error);
+
 G_END_DECLS

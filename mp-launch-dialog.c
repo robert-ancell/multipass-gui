@@ -89,3 +89,24 @@ mp_launch_dialog_new (MpClient *client)
 
     return dialog;
 }
+
+const gchar *
+mp_launch_dialog_get_name (MpLaunchDialog *dialog)
+{
+    g_return_val_if_fail (MP_IS_LAUNCH_DIALOG (dialog), NULL);
+    return gtk_entry_get_text (dialog->name_entry);
+}
+
+gchar *
+mp_launch_dialog_get_image_name (MpLaunchDialog *dialog)
+{
+    g_return_val_if_fail (MP_IS_LAUNCH_DIALOG (dialog), NULL);
+
+    GtkTreeIter iter;
+    if (!gtk_combo_box_get_active_iter (dialog->image_combo, &iter))
+        return NULL;
+
+    gchar *name;
+    gtk_tree_model_get (GTK_TREE_MODEL (dialog->image_model), &iter, 0, &name, -1);
+    return name;
+}
