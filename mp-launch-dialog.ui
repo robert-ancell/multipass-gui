@@ -9,7 +9,18 @@
             <property name="visible">True</property>
           </object>
         </child>
+        <child>
+          <object class="GtkComboBox" id="image_combo">
+            <property name="visible">True</property>
+            <property name="model">image_model</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>
+  <object class="GtkListStore" id="image_model">
+    <columns>
+      <column type="gchararray"/>
+    </columns>
+  </object>
 </interface>

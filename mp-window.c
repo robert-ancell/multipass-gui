@@ -28,7 +28,7 @@ static void
 instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
 {
     if (row == window->add_row) {
-        MpLaunchDialog *dialog = mp_launch_dialog_new ();
+        MpLaunchDialog *dialog = mp_launch_dialog_new (window->client);
         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
         gtk_dialog_run (GTK_DIALOG (dialog));
         gtk_widget_destroy (GTK_WIDGET (dialog));
