@@ -1,4 +1,5 @@
-project ('multipass-gui', 'c')
+project ('multipass-gui', 'c',
+          meson_version: '>= 0.37.1')
 
 gnome = import ('gnome')
 i18n = import ('i18n')
