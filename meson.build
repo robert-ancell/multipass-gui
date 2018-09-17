@@ -4,7 +4,7 @@ project ('multipass-gui', 'c',
 gnome = import ('gnome')
 i18n = import ('i18n')
 
-gtk_dep = dependency ('gtk+-3.0')
+gtk_dep = dependency ('gtk+-3.0', version: '>= 3.10')
 vte_dep = dependency ('vte-2.91', version: '>= 0.48')
 
 resources = gnome.compile_resources('mp-resources',
