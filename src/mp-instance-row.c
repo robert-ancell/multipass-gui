@@ -14,9 +14,11 @@ struct _MpInstanceRow
 {
     GtkListBoxRow  parent_instance;
 
+    GtkImage      *image;
     GtkLabel      *label;
 
     gchar         *name;
+    gchar         *state;
 };
 
 G_DEFINE_TYPE (MpInstanceRow, mp_instance_row, GTK_TYPE_LIST_BOX_ROW)
@@ -27,6 +29,7 @@ mp_instance_row_dispose (GObject *object)
     MpInstanceRow *row = MP_INSTANCE_ROW (object);
 
     g_clear_pointer (&row->name, g_free);
+    g_clear_pointer (&row->state, g_free);
 
     G_OBJECT_CLASS (mp_instance_row_parent_class)->dispose (object);
 }
@@ -41,6 +44,7 @@ mp_instance_row_class_init (MpInstanceRowClass *klass)
 
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-instance-row.ui");
 
+    gtk_widget_class_bind_template_child (widget_class, MpInstanceRow, image);
     gtk_widget_class_bind_template_child (widget_class, MpInstanceRow, label);
 }
 
@@ -66,4 +70,27 @@ mp_instance_row_get_name (MpInstanceRow *row)
 {
     g_return_val_if_fail (MP_IS_INSTANCE_ROW (row), NULL);
     return row->name;
+}
+
+void
+mp_instance_row_set_state (MpInstanceRow *row, const gchar *state)
+{
+    g_return_if_fail (MP_IS_INSTANCE_ROW (row));
+    g_free (row->state);
+    row->state = g_strdup (state);
+
+    gtk_widget_show (GTK_WIDGET (row->image));
+    if (strcmp (state, "RUNNING") == 0)
+        gtk_image_set_from_icon_name (row->image, "media-playback-start-symbolic", GTK_ICON_SIZE_BUTTON);
+    else if (strcmp (state, "STOPPED") == 0)
+        gtk_image_set_from_icon_name (row->image, "media-playback-stop-symbolic", GTK_ICON_SIZE_BUTTON);
+    else
+        gtk_widget_hide (GTK_WIDGET (row->image));
+}
+
+const gchar *
+mp_instance_row_get_state (MpInstanceRow *row)
+{
+    g_return_val_if_fail (MP_IS_INSTANCE_ROW (row), NULL);
+    return row->state;
 }

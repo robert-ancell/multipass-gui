@@ -30,11 +30,28 @@ struct _MpWindow
 
     GCancellable  *cancellable;
     MpClient      *client;
+    GSource       *list_timeout_source;
 };
 
 G_DEFINE_TYPE (MpWindow, mp_window, GTK_TYPE_WINDOW)
 
-static void
+static MpInstanceRow *
+find_row (MpWindow *window, const gchar *name)
+{
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->instances_listbox));
+    for (GList *link = children; link; link = link->next) {
+        if (!MP_IS_INSTANCE_ROW (link->data))
+            continue;
+
+        MpInstanceRow *row = link->data;
+        if (g_strcmp0 (mp_instance_row_get_name (row), name) == 0)
+            return row;
+    }
+
+    return NULL;
+}
+
+static MpInstanceRow *
 add_row (MpWindow *window, const gchar *name)
 {
     MpInstanceRow *row = mp_instance_row_new (name);
@@ -45,6 +62,8 @@ add_row (MpWindow *window, const gchar *name)
 
     if (gtk_list_box_get_selected_row (window->instances_listbox) == NULL)
        gtk_list_box_select_row (window->instances_listbox, GTK_LIST_BOX_ROW (row));
+
+    return row;
 }
 
 static void
@@ -59,6 +78,7 @@ instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
             g_autofree gchar *image_name = mp_launch_dialog_get_image_name (dialog);
 
             mp_client_launch_async (window->client, name, image_name, window->cancellable, NULL, window);
+
             add_row (window, name);
         }
 
@@ -132,6 +152,17 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_bind_template_callback (widget_class, instance_row_selected_cb);
 }
 
+static void update_list (MpWindow *window);
+
+static gboolean
+list_timeout_cb (gpointer user_data)
+{
+    MpWindow *window = user_data;
+    g_clear_pointer (&window->list_timeout_source, g_source_unref);
+    update_list (window);
+    return G_SOURCE_REMOVE;
+}
+
 static void
 list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 {
@@ -139,15 +170,42 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 
     g_autoptr(GError) error = NULL;
     g_autoptr(GPtrArray) instances = mp_client_list_finish (window->client, result, &error);
-    if (instances == NULL) {
+    if (instances != NULL) {
+        GHashTable *updated_rows = g_hash_table_new (g_str_hash, g_str_equal);
+        for (int i = 0; i < instances->len; i++) {
+            MpInstance *instance = g_ptr_array_index (instances, i);
+            const gchar *name = mp_instance_get_name (instance);
+
+            MpInstanceRow *row = find_row (window, name);
+            if (row == NULL)
+                row = add_row (window, name);
+            mp_instance_row_set_state (row, mp_instance_get_state (instance));
+            g_hash_table_add (updated_rows, (gpointer) name);
+        }
+
+        /* Remove any unused rows */
+        g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->instances_listbox));
+        for (GList *link = children; link; link = link->next) {
+            if (!MP_IS_INSTANCE_ROW (link->data))
+                continue;
+
+            MpInstanceRow *row = link->data;
+            if (g_hash_table_lookup (updated_rows, mp_instance_row_get_name (row)) == NULL)
+                gtk_container_remove (GTK_CONTAINER (window->instances_listbox), GTK_WIDGET (row));
+        }
+    } else {
         g_printerr ("Failed to get instances: %s\n", error->message);
-        return;
     }
 
-    for (int i = 0; i < instances->len; i++) {
-        MpInstance *instance = g_ptr_array_index (instances, i);
-        add_row (window, mp_instance_get_name (instance));
-    }
+    window->list_timeout_source = g_timeout_source_new_seconds (1);
+    g_source_set_callback (window->list_timeout_source, list_timeout_cb, window, NULL);
+    g_source_attach (window->list_timeout_source, g_main_context_default ());
+}
+
+static void
+update_list (MpWindow *window)
+{
+    mp_client_list_async (window->client, window->cancellable, list_cb, window);
 }
 
 void
@@ -168,7 +226,7 @@ mp_window_init (MpWindow *window)
     if (version != NULL)
         gtk_stack_set_visible_child (window->main_stack, GTK_WIDGET (window->instances_box));
 
-    mp_client_list_async (window->client, window->cancellable, list_cb, window);
+    update_list (window);
 }
 
 MpWindow *

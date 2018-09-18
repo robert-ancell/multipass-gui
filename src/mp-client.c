@@ -8,6 +8,8 @@
  * license.
  */
 
+#include <ctype.h>
+
 #include "mp-client.h"
 #include "mp-instance.h"
 
@@ -32,6 +34,27 @@ MpClient *
 mp_client_new (void)
 {
     return g_object_new (MP_TYPE_CLIENT, NULL);
+}
+
+gchar **
+split_line (const gchar *line)
+{
+    const gchar *c = line;
+
+    g_autoptr(GPtrArray) tokens = g_ptr_array_new ();
+    while (*c != '\0') {
+        const gchar *start = c;
+        while (*c != '\0' && !isspace (*c))
+            c++;
+        if (c != start)
+            g_ptr_array_add (tokens, g_strndup (start, c - start));
+
+        while (isspace (*c))
+            c++;
+    }
+    g_ptr_array_add (tokens, NULL);
+
+    return (gchar **) g_steal_pointer (&tokens->pdata);
 }
 
 static gchar *
@@ -72,7 +95,7 @@ mp_client_get_version_sync (MpClient *client, GCancellable *cancellable, GError 
 
     g_auto(GStrv) lines = g_strsplit (output, "\n", -1);
     for (int i = 0; lines[i] != NULL; i++) {
-        g_auto(GStrv) tokens = g_strsplit (lines[i], " ", 2);
+        g_auto(GStrv) tokens = split_line (lines[i]);
         if (g_strv_length (tokens) < 2)
             continue;
 
@@ -104,7 +127,7 @@ list_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         if (i == 0)
             continue;
 
-        g_auto(GStrv) tokens = g_strsplit (lines[i], " ", -1);
+        g_auto(GStrv) tokens = split_line (lines[i]);
         if (tokens[0] == NULL)
             continue;
 
@@ -164,7 +187,7 @@ find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         if (lines[i][0] == ' ')
             continue;
 
-        g_auto(GStrv) tokens = g_strsplit (lines[i], " ", -1);
+        g_auto(GStrv) tokens = split_line (lines[i]);
         if (tokens[0] == NULL)
             continue;
 
