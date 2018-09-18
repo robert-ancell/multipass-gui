@@ -222,3 +222,114 @@ mp_client_launch_finish (MpClient *client, GAsyncResult *result, GError **error)
     g_return_val_if_fail (g_task_is_valid (G_TASK (result), client), FALSE);
     return g_task_propagate_boolean (G_TASK (result), error);
 }
+
+static void
+start_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    GSubprocess *subprocess = G_SUBPROCESS (object);
+    g_autoptr(GTask) task = user_data;
+
+    g_autofree gchar *output = NULL;
+    g_autoptr(GError) error = NULL;
+    if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
+        g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    g_task_return_boolean (task, TRUE);
+}
+
+void
+mp_client_start_async (MpClient *client, const gchar *name, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_autoptr(GTask) task = g_task_new (client, cancellable, callback, callback_data);
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GSubprocess) subprocess = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "multipass", "start", name, NULL);
+    if (subprocess == NULL) {
+        g_warning ("Failed to make subprocess: %s\n", error->message);
+        return;
+    }
+    g_subprocess_communicate_utf8_async (subprocess, NULL, cancellable, start_cb, g_steal_pointer (&task));
+}
+
+gboolean
+mp_client_start_finish (MpClient *client, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), client), FALSE);
+    return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+stop_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    GSubprocess *subprocess = G_SUBPROCESS (object);
+    g_autoptr(GTask) task = user_data;
+
+    g_autofree gchar *output = NULL;
+    g_autoptr(GError) error = NULL;
+    if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
+        g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    g_task_return_boolean (task, TRUE);
+}
+
+void
+mp_client_stop_async (MpClient *client, const gchar *name, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_autoptr(GTask) task = g_task_new (client, cancellable, callback, callback_data);
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GSubprocess) subprocess = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "multipass", "stop", name, NULL);
+    if (subprocess == NULL) {
+        g_warning ("Failed to make subprocess: %s\n", error->message);
+        return;
+    }
+    g_subprocess_communicate_utf8_async (subprocess, NULL, cancellable, stop_cb, g_steal_pointer (&task));
+}
+
+gboolean
+mp_client_stop_finish (MpClient *client, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), client), FALSE);
+    return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+delete_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    GSubprocess *subprocess = G_SUBPROCESS (object);
+    g_autoptr(GTask) task = user_data;
+
+    g_autofree gchar *output = NULL;
+    g_autoptr(GError) error = NULL;
+    if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
+        g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    g_task_return_boolean (task, TRUE);
+}
+
+void
+mp_client_delete_async (MpClient *client, const gchar *name, gboolean purge, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_autoptr(GTask) task = g_task_new (client, cancellable, callback, callback_data);
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GSubprocess) subprocess = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "multipass", "delete", name, purge ? "--purge" : NULL, NULL);
+    if (subprocess == NULL) {
+        g_warning ("Failed to make subprocess: %s\n", error->message);
+        return;
+    }
+    g_subprocess_communicate_utf8_async (subprocess, NULL, cancellable, delete_cb, g_steal_pointer (&task));
+}
+
+gboolean
+mp_client_delete_finish (MpClient *client, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), client), FALSE);
+    return g_task_propagate_boolean (G_TASK (result), error);
+}
