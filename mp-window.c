@@ -11,7 +11,10 @@ struct _MpWindow
 
     GtkListBoxRow *add_row;
     GtkBox        *image_box;
+    GtkBox        *instances_box;
     GtkListBox    *instances_listbox;
+    GtkStack      *instances_stack;
+    GtkStack      *main_stack;
     VteTerminal   *terminal;
 
     GCancellable  *cancellable;
@@ -26,6 +29,8 @@ add_row (MpWindow *window, const gchar *name)
     MpInstanceRow *row = mp_instance_row_new (name);
     gtk_widget_show (GTK_WIDGET (row));
     gtk_list_box_insert (window->instances_listbox, GTK_WIDGET (row), gtk_list_box_row_get_index (window->add_row));
+
+    gtk_stack_set_visible_child (window->instances_stack, GTK_WIDGET (window->image_box));
 
     if (gtk_list_box_get_selected_row (window->instances_listbox) == NULL)
        gtk_list_box_select_row (window->instances_listbox, GTK_LIST_BOX_ROW (row));
@@ -107,7 +112,10 @@ mp_window_class_init (MpWindowClass *klass)
 
     gtk_widget_class_bind_template_child (widget_class, MpWindow, add_row);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, image_box);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_box);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_listbox);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_stack);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, main_stack);
 
     gtk_widget_class_bind_template_callback (widget_class, instance_row_activated_cb);
     gtk_widget_class_bind_template_callback (widget_class, instance_row_selected_cb);
@@ -141,6 +149,13 @@ mp_window_init (MpWindow *window)
 
     window->cancellable = g_cancellable_new ();
     window->client = mp_client_new ();
+
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *version = mp_client_get_version_sync (window->client, window->cancellable, &error);
+
+    if (version != NULL)
+        gtk_stack_set_visible_child (window->main_stack, GTK_WIDGET (window->instances_box));
+
     mp_client_list_async (window->client, window->cancellable, list_cb, window);
 }
 

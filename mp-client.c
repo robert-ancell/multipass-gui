@@ -49,6 +49,30 @@ mp_client_generate_name (MpClient *client)
     return g_strdup_printf ("%s-%s", adjective, name);
 }
 
+gchar *
+mp_client_get_version_sync (MpClient *client, GCancellable *cancellable, GError **error)
+{
+    g_autoptr(GSubprocess) subprocess = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_PIPE, error, "multipass", "version", NULL);
+    if (subprocess == NULL)
+        return NULL;
+    g_autofree gchar *output = NULL;
+    if (!g_subprocess_communicate_utf8 (subprocess, NULL, cancellable, &output, NULL, error))
+        return NULL;
+
+    g_auto(GStrv) lines = g_strsplit (output, "\n", -1);
+    for (int i = 0; lines[i] != NULL; i++) {
+        g_auto(GStrv) tokens = g_strsplit (lines[i], " ", 2);
+        if (g_strv_length (tokens) < 2)
+            continue;
+
+        if (g_strcmp0 (tokens[0], "multipassd") == 0)
+            return g_strdup (tokens[1]);
+    }
+
+    // FIXME: Generate an error
+    return NULL;
+}
+
 static void
 list_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
