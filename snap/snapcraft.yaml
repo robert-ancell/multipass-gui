@@ -1,0 +1,36 @@
+name: multipass-gui
+version: git
+summary: Multipass
+description: |
+  Multipass allows to to quickly launch Ubuntu virtual machines.
+
+grade: stable
+confinement: classic
+
+apps:
+  multipass-gui:
+    command: bin/classic-launch classic ${SNAP}/usr/bin/multipass-gui
+    desktop: usr/share/applications/multipass-gui.desktop
+
+parts:
+  multipass-gui:
+    build-attributes: ['no-system-libraries']
+    after: [desktop-gtk3]
+    plugin: meson
+    meson-parameters: [--prefix=/usr]
+    source: .
+    override-build: |
+      snapcraftctl build
+      mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui/
+      cp snapbuild/multipass-gui.desktop $SNAPCRAFT_PART_INSTALL/meta/gui/
+    build-packages:
+      - libgtk-3-dev
+      - libvte-2.91-dev
+    stage-packages:
+      - libvte-2.91-0
+  clasic-launch:
+    plugin: dump
+    source: ./snap
+    organize:
+      classic-launch: bin/classic-launch
+
