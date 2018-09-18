@@ -2,7 +2,7 @@ name: multipass-gui
 version: git
 summary: Multipass
 description: |
-  Multipass allows to to quickly launch Ubuntu virtual machines.
+  Multipass allows you to to quickly launch Ubuntu virtual machines.
 
 grade: stable
 confinement: classic
