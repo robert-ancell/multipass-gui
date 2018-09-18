@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
+language: c
+
+script:
+  - docker pull ubuntudesktop/gnome-3-26-1604
+  - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-26-1604 bash`
+  - docker exec $cid apt update
+  - docker exec $cid snapcraft
