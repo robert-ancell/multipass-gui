@@ -215,6 +215,7 @@ mp_window_init (MpWindow *window)
 
     window->terminal = VTE_TERMINAL (vte_terminal_new ());
     gtk_widget_show (GTK_WIDGET (window->terminal));
+    gtk_widget_set_hexpand (GTK_WIDGET (window->terminal), TRUE);
     gtk_container_add (GTK_CONTAINER (window->image_box), GTK_WIDGET (window->terminal));
 
     window->cancellable = g_cancellable_new ();
