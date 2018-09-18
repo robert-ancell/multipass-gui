@@ -1,6 +1,7 @@
 #include <vte/vte.h>
 
 #include "mp-client.h"
+#include "mp-instance.h"
 #include "mp-instance-row.h"
 #include "mp-launch-dialog.h"
 #include "mp-window.h"
@@ -127,14 +128,15 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
     MpWindow *window = user_data;
 
     g_autoptr(GError) error = NULL;
-    g_auto(GStrv) instance_names = mp_client_list_finish (window->client, result, &error);
-    if (instance_names == NULL) {
+    g_autoptr(GPtrArray) instances = mp_client_list_finish (window->client, result, &error);
+    if (instances == NULL) {
         g_printerr ("Failed to get instances: %s\n", error->message);
         return;
     }
 
-    for (int i = 0; instance_names[i] != NULL; i++) {
-        add_row (window, instance_names[i]);
+    for (int i = 0; i < instances->len; i++) {
+        MpInstance *instance = g_ptr_array_index (instances, i);
+        add_row (window, mp_instance_get_name (instance));
     }
 }
 
