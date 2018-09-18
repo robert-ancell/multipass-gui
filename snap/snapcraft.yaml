@@ -22,7 +22,7 @@ parts:
     override-build: |
       snapcraftctl build
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui/
-      cp snapbuild/multipass-gui.desktop $SNAPCRAFT_PART_INSTALL/meta/gui/
+      cp snapbuild/src/multipass-gui.desktop $SNAPCRAFT_PART_INSTALL/meta/gui/
     build-packages:
       - libgtk-3-dev
       - libvte-2.91-dev
