@@ -67,7 +67,7 @@ find_cb (GObject *client, GAsyncResult *result, gpointer user_data)
     MpLaunchDialog *dialog = user_data;
 
     g_autoptr(GError) error = NULL;
-    g_auto(GStrv) image_names = mp_client_find_finish (dialog->client, result, &error);
+    g_auto(GStrv) image_names = mp_client_find_finish (MP_CLIENT (client), result, &error);
     if (image_names == NULL) {
         g_printerr ("Failed to get images: %s\n", error->message);
         return;
