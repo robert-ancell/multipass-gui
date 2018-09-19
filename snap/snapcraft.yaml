@@ -1,5 +1,7 @@
 name: multipass-gui
 version: git
+version-script: |
+  echo $(date --utc +%Y%m%d).$(git rev-parse HEAD | cut -c -7)
 summary: Multipass
 description: |
   Multipass allows you to to quickly launch Ubuntu virtual machines.
