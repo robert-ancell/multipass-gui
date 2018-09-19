@@ -8,11 +8,15 @@
  * license.
  */
 
-#include "mp-application.h"
+#pragma once
 
-int
-main (int argc, char **argv)
-{
-    g_autoptr(MpApplication) app = mp_application_new ();
-    return g_application_run (G_APPLICATION (app), argc, argv);
-}
+#include <gtk/gtk.h>
+
+G_BEGIN_DECLS
+
+#define MP_TYPE_APPLICATION (mp_application_get_type ())
+G_DECLARE_FINAL_TYPE (MpApplication, mp_application, MP, APPLICATION, GtkApplication)
+
+MpApplication *mp_application_new (void);
+
+G_END_DECLS
