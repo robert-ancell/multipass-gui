@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/com/ubuntu/multipass">
-    <file preprocess="xml-stripblanks">mp-instance-row.ui</file>
+    <file preprocess="xml-stripblanks">mp-configured-instance-row.ui</file>
+    <file preprocess="xml-stripblanks">mp-details-dialog.ui</file>
     <file preprocess="xml-stripblanks">mp-launch-dialog.ui</file>
+    <file preprocess="xml-stripblanks">mp-running-instance-row.ui</file>
     <file preprocess="xml-stripblanks">mp-window.ui</file>
     <file>adjectives.txt</file>
     <file>names.txt</file>

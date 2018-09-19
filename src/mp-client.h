@@ -81,7 +81,17 @@ void       mp_client_delete_async     (MpClient            *client,
                                        GAsyncReadyCallback  callback,
                                        gpointer             callback_data);
 
-gboolean   mp_client_delete_finish      (MpClient            *client,
+gboolean   mp_client_delete_finish    (MpClient            *client,
+                                       GAsyncResult        *result,
+                                       GError             **error);
+
+void       mp_client_recover_async    (MpClient            *client,
+                                       const gchar         *name,
+                                       GCancellable        *cancellable,
+                                       GAsyncReadyCallback  callback,
+                                       gpointer             callback_data);
+
+gboolean   mp_client_recover_finish   (MpClient            *client,
                                        GAsyncResult        *result,
                                        GError             **error);
 

@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="MpLaunchDialog" parent="GtkDialog">
-    <property name="title" translatable="yes">Create Ubutu Instance</property>
+  <template class="MpDetailsDialog" parent="GtkDialog">
     <property name="resizable">False</property>
-    <child type="action">
-      <object class="GtkButton" id="launch_button">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">_Create &amp; Start</property>
-        <property name="use_underline">True</property>
-        <property name="can_default">True</property>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="cancel_button">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">_Cancel</property>
-        <property name="use_underline">True</property>
-      </object>
-    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <child>
@@ -30,6 +14,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Ubuntu version:</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -37,10 +22,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="image_combo">
+              <object class="GtkLabel" id="version_label">
                 <property name="visible">True</property>
-                <property name="model">image_model</property>
-                <property name="hexpand">True</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -50,7 +34,8 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Name this instance:</property>
+                <property name="label" translatable="yes">IPv4 address:</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -58,9 +43,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="name_entry">
+              <object class="GtkLabel" id="ipv4_label">
                 <property name="visible">True</property>
-                <property name="hexpand">True</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -71,14 +56,5 @@
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="-5" default="true">launch_button</action-widget>
-      <action-widget response="-6">cancel_button</action-widget>
-    </action-widgets>
   </template>
-  <object class="GtkListStore" id="image_model">
-    <columns>
-      <column type="gchararray"/>
-    </columns>
-  </object>
 </interface>

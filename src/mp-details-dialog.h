@@ -10,19 +10,17 @@
 
 #pragma once
 
-#include <gio/gio.h>
+#include <gtk/gtk.h>
+
+#include "mp-client.h"
+#include "mp-instance.h"
 
 G_BEGIN_DECLS
 
-#define MP_TYPE_INSTANCE (mp_instance_get_type ())
-G_DECLARE_FINAL_TYPE (MpInstance, mp_instance, MP, INSTANCE, GObject)
+#define MP_TYPE_DETAILS_DIALOG (mp_details_dialog_get_type ())
+G_DECLARE_FINAL_TYPE (MpDetailsDialog, mp_details_dialog, MP, DETAILS_DIALOG, GtkDialog)
 
-const gchar *mp_instance_get_name    (MpInstance *instance);
-
-const gchar *mp_instance_get_state   (MpInstance *instance);
-
-const gchar *mp_instance_get_ipv4    (MpInstance *instance);
-
-const gchar *mp_instance_get_release (MpInstance *instance);
+MpDetailsDialog *mp_details_dialog_new           (MpClient   *client,
+                                                  MpInstance *instance);
 
 G_END_DECLS

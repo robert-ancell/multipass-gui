@@ -12,14 +12,18 @@
 
 enum {
     PROP_NAME = 1,
-    PROP_STATE
+    PROP_STATE,
+    PROP_IPV4,
+    PROP_RELEASE
 };
 
 struct _MpInstance
 {
     GObject parent_instance;
 
+    gchar  *ipv4;
     gchar  *name;
+    gchar  *release;
     gchar  *state;
 };
 
@@ -42,6 +46,14 @@ mp_instance_set_property (GObject      *object,
         g_clear_pointer (&instance->state, g_free);
         instance->state = g_value_dup_string (value);
         break;
+    case PROP_IPV4:
+        g_clear_pointer (&instance->ipv4, g_free);
+        instance->ipv4 = g_value_dup_string (value);
+        break;
+    case PROP_RELEASE:
+        g_clear_pointer (&instance->release, g_free);
+        instance->release = g_value_dup_string (value);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -63,6 +75,12 @@ mp_instance_get_property (GObject    *object,
     case PROP_STATE:
         g_value_set_string (value, instance->state);
         break;
+    case PROP_IPV4:
+        g_value_set_string (value, instance->ipv4);
+        break;
+    case PROP_RELEASE:
+        g_value_set_string (value, instance->release);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -74,7 +92,9 @@ mp_instance_dispose (GObject *object)
 {
     MpInstance *instance = MP_INSTANCE (object);
 
+    g_clear_pointer (&instance->ipv4, g_free);
     g_clear_pointer (&instance->name, g_free);
+    g_clear_pointer (&instance->release, g_free);
     g_clear_pointer (&instance->state, g_free);
 
     G_OBJECT_CLASS (mp_instance_parent_class)->dispose (object);
@@ -103,6 +123,20 @@ mp_instance_class_init (MpInstanceClass *klass)
                                                           "State",
                                                           NULL,
                                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (object_class,
+                                     PROP_IPV4,
+                                     g_param_spec_string ("ipv4",
+                                                          "ipv4",
+                                                          "IPv4 address",
+                                                          NULL,
+                                                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (object_class,
+                                     PROP_RELEASE,
+                                     g_param_spec_string ("release",
+                                                          "release",
+                                                          "Release",
+                                                          NULL,
+                                                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 void
@@ -122,4 +156,18 @@ mp_instance_get_state (MpInstance *instance)
 {
     g_return_val_if_fail (MP_IS_INSTANCE (instance), NULL);
     return instance->state;
+}
+
+const gchar *
+mp_instance_get_ipv4 (MpInstance *instance)
+{
+    g_return_val_if_fail (MP_IS_INSTANCE (instance), NULL);
+    return instance->ipv4;
+}
+
+const gchar *
+mp_instance_get_release (MpInstance *instance)
+{
+    g_return_val_if_fail (MP_IS_INSTANCE (instance), NULL);
+    return instance->release;
 }

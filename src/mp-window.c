@@ -12,25 +12,31 @@
 #include <vte/vte.h>
 
 #include "mp-client.h"
+#include "mp-configured-instance-row.h"
+#include "mp-details-dialog.h"
 #include "mp-instance.h"
-#include "mp-instance-row.h"
 #include "mp-launch-dialog.h"
+#include "mp-running-instance-row.h"
 #include "mp-window.h"
 
 struct _MpWindow
 {
     GtkWindow      parent_instance;
 
-    GtkListBoxRow *add_row;
-    GtkButton     *delete_button;
-    GtkBox        *image_box;
+    GtkLabel      *configured_instances_label;
+    GtkListBox    *configured_instances_listbox;
+    GtkStack      *configured_instances_stack;
+    GtkButton     *connect_button;
+    GtkButton     *create_button;
+    GtkButton     *details_button;
     GtkBox        *instances_box;
-    GtkListBox    *instances_listbox;
-    GtkStack      *instances_stack;
     GtkStack      *main_stack;
-    GtkLabel      *no_instance_label;
-    GtkButton     *start_stop_button;
-    VteTerminal   *terminal;
+    GtkLabel      *running_instances_label;
+    GtkListBox    *running_instances_listbox;
+    GtkStack      *running_instances_stack;
+    GtkButton     *start_button;
+    GtkButton     *stop_button;
+    GtkButton     *trash_button;
 
     GCancellable  *cancellable;
     MpClient      *client;
@@ -39,91 +45,133 @@ struct _MpWindow
 
 G_DEFINE_TYPE (MpWindow, mp_window, GTK_TYPE_WINDOW)
 
-static MpInstanceRow *
-find_row (MpWindow *window, const gchar *name)
+static MpConfiguredInstanceRow *
+find_configured_row (MpWindow *window, const gchar *name)
 {
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->instances_listbox));
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->configured_instances_listbox));
     for (GList *link = children; link; link = link->next) {
-        if (!MP_IS_INSTANCE_ROW (link->data))
+        if (!MP_IS_CONFIGURED_INSTANCE_ROW (link->data))
             continue;
 
-        MpInstanceRow *row = link->data;
-        if (g_strcmp0 (mp_instance_row_get_name (row), name) == 0)
+        MpConfiguredInstanceRow *row = link->data;
+        if (g_strcmp0 (mp_instance_get_name (mp_configured_instance_row_get_instance (row)), name) == 0)
             return row;
     }
 
     return NULL;
 }
 
-static MpInstanceRow *
-get_selected_row (MpWindow *window)
+static MpRunningInstanceRow *
+find_running_row (MpWindow *window, const gchar *name)
 {
-    GtkListBoxRow *row = gtk_list_box_get_selected_row (window->instances_listbox);
-    if (row == NULL || !MP_IS_INSTANCE_ROW (row))
-       return NULL;
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->running_instances_listbox));
+    for (GList *link = children; link; link = link->next) {
+        if (!MP_IS_RUNNING_INSTANCE_ROW (link->data))
+            continue;
 
-    return MP_INSTANCE_ROW (row);
-}
+        MpRunningInstanceRow *row = link->data;
+        if (g_strcmp0 (mp_instance_get_name (mp_running_instance_row_get_instance (row)), name) == 0)
+            return row;
+    }
 
-static MpInstanceRow *
-add_row (MpWindow *window, const gchar *name, const gchar *state)
-{
-    MpInstanceRow *row = mp_instance_row_new (name);
-    if (state != NULL)
-        mp_instance_row_set_state (row, state);
-    gtk_widget_show (GTK_WIDGET (row));
-    gtk_list_box_insert (window->instances_listbox, GTK_WIDGET (row), gtk_list_box_row_get_index (window->add_row));
-
-    if (gtk_list_box_get_selected_row (window->instances_listbox) == NULL)
-       gtk_list_box_select_row (window->instances_listbox, GTK_LIST_BOX_ROW (row));
-
-    return row;
+    return NULL;
 }
 
 static void
-instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
+configured_selection_changed_cb (MpWindow *window)
 {
-    if (row == window->add_row) {
-        MpLaunchDialog *dialog = mp_launch_dialog_new (window->client);
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+    g_autoptr(GList) selected_rows = gtk_list_box_get_selected_rows (window->configured_instances_listbox);
 
-        if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
-            const gchar *name = mp_launch_dialog_get_name (dialog);
-            g_autofree gchar *image_name = mp_launch_dialog_get_image_name (dialog);
+    gtk_widget_set_sensitive (GTK_WIDGET (window->start_button), selected_rows != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (window->trash_button), selected_rows != NULL);
 
-            mp_client_launch_async (window->client, name, image_name, window->cancellable, NULL, window);
-
-            add_row (window, name, NULL);
-        }
-
-        gtk_widget_destroy (GTK_WIDGET (dialog));
+    gtk_button_set_label (window->trash_button, _("Trash"));
+    if (selected_rows != NULL) {
+        MpConfiguredInstanceRow *row = MP_CONFIGURED_INSTANCE_ROW (gtk_list_box_get_selected_row (window->configured_instances_listbox));
+        MpInstance *instance = mp_configured_instance_row_get_instance (row);
+        if (g_strcmp0 (mp_instance_get_state (instance), "DELETED") == 0)
+            gtk_button_set_label (window->trash_button, _("Recover"));
     }
 }
 
 static void
-update_action_bar (MpWindow *window)
+running_selection_changed_cb (MpWindow *window)
 {
-    MpInstanceRow *row = get_selected_row (window);
-    if (row == NULL) {
-        gtk_stack_set_visible_child (window->instances_stack, GTK_WIDGET (window->no_instance_label));
-        return;
+    g_autoptr(GList) selected_rows = gtk_list_box_get_selected_rows (window->running_instances_listbox);
+
+    gtk_widget_set_sensitive (GTK_WIDGET (window->stop_button), selected_rows != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (window->details_button), selected_rows != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (window->connect_button), selected_rows != NULL);
+}
+
+static void
+create_button_clicked_cb (MpWindow *window)
+{
+    MpLaunchDialog *dialog = mp_launch_dialog_new (window->client);
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+        const gchar *name = mp_launch_dialog_get_name (dialog);
+        g_autofree gchar *image_name = mp_launch_dialog_get_image_name (dialog);
+
+        mp_client_launch_async (window->client, name, image_name, window->cancellable, NULL, window);
     }
 
-    gtk_stack_set_visible_child (window->instances_stack, GTK_WIDGET (window->image_box));
-    const gchar *state = mp_instance_row_get_state (row);
+    gtk_widget_destroy (GTK_WIDGET (dialog));
+}
 
-    if (g_strcmp0 (state, "RUNNING") == 0) {
-        gtk_button_set_label (window->start_stop_button, _("Stop"));
-        gtk_widget_set_sensitive (GTK_WIDGET (window->start_stop_button), TRUE);
-    }
-    else if (g_strcmp0 (state, "STOPPED") == 0) {
-        gtk_button_set_label (window->start_stop_button, _("Start"));
-        gtk_widget_set_sensitive (GTK_WIDGET (window->start_stop_button), TRUE);
-    }
+static void
+trash_button_clicked_cb (MpWindow *window)
+{
+    MpConfiguredInstanceRow *row = MP_CONFIGURED_INSTANCE_ROW (gtk_list_box_get_selected_row (window->configured_instances_listbox));
+    MpInstance *instance = mp_configured_instance_row_get_instance (row);
+
+    if (g_strcmp0 (mp_instance_get_state (instance), "DELETED") == 0)
+        mp_client_recover_async (window->client,
+                                 mp_instance_get_name (instance),
+                                 window->cancellable,
+                                 NULL, NULL);
     else
-        gtk_widget_set_sensitive (GTK_WIDGET (window->start_stop_button), FALSE);
+        mp_client_delete_async (window->client,
+                                mp_instance_get_name (instance),
+                                FALSE,
+                                window->cancellable,
+                                NULL, NULL);
+}
 
-    gtk_widget_set_sensitive (GTK_WIDGET (window->delete_button), g_strcmp0 (state, "DELETED") != 0);
+static void
+start_button_clicked_cb (MpWindow *window)
+{
+    MpConfiguredInstanceRow *row = MP_CONFIGURED_INSTANCE_ROW (gtk_list_box_get_selected_row (window->configured_instances_listbox));
+
+    mp_client_start_async (window->client,
+                           mp_instance_get_name (mp_configured_instance_row_get_instance (row)),
+                           window->cancellable,
+                           NULL, NULL);
+}
+
+static void
+stop_button_clicked_cb (MpWindow *window)
+{
+    MpRunningInstanceRow *row = MP_RUNNING_INSTANCE_ROW (gtk_list_box_get_selected_row (window->running_instances_listbox));
+
+    mp_client_stop_async (window->client,
+                          mp_instance_get_name (mp_running_instance_row_get_instance (row)),
+                          window->cancellable,
+                          NULL, NULL);
+}
+
+static void
+details_button_clicked_cb (MpWindow *window)
+{
+    MpRunningInstanceRow *row = MP_RUNNING_INSTANCE_ROW (gtk_list_box_get_selected_row (window->running_instances_listbox));
+    MpInstance *instance = mp_running_instance_row_get_instance (row);
+
+    MpDetailsDialog *dialog = mp_details_dialog_new (window->client, instance);
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -134,69 +182,39 @@ spawn_cb (VteTerminal *terminal, GPid pid, GError *error, gpointer user_data)
 }
 
 static void
-instance_row_selected_cb (MpWindow *window, GtkListBoxRow *row)
+connect_button_clicked_cb (MpWindow *window)
 {
-    if (!MP_IS_INSTANCE_ROW (row))
-        return;
-    MpInstanceRow *r = MP_INSTANCE_ROW (row);
+    MpRunningInstanceRow *row = MP_RUNNING_INSTANCE_ROW (gtk_list_box_get_selected_row (window->running_instances_listbox));
+    MpInstance *instance = mp_running_instance_row_get_instance (row);
 
-    update_action_bar (window);
+    GtkWindow *terminal_window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    GtkHeaderBar *header_bar = GTK_HEADER_BAR (gtk_header_bar_new ());
+    gtk_header_bar_set_show_close_button (header_bar, TRUE);
+    gtk_header_bar_set_title (header_bar, mp_instance_get_name (instance));
+    gtk_widget_show (GTK_WIDGET (header_bar));
+    gtk_window_set_titlebar (terminal_window, GTK_WIDGET (header_bar));
 
-    vte_terminal_set_pty (window->terminal, NULL);
-    vte_terminal_reset (window->terminal, TRUE, TRUE);
+    VteTerminal *terminal = VTE_TERMINAL (vte_terminal_new ());
+    gtk_widget_show (GTK_WIDGET (terminal));
+    gtk_container_add (GTK_CONTAINER (terminal_window), GTK_WIDGET (terminal));
 
-    if (g_strcmp0 (mp_instance_row_get_state (r), "RUNNING") == 0) {
-        g_autoptr(GPtrArray) args = g_ptr_array_new ();
-        g_ptr_array_add (args, "multipass");
-        g_ptr_array_add (args, "shell");
-        g_ptr_array_add (args, (gpointer) mp_instance_row_get_name (r));
-        g_ptr_array_add (args, NULL);
-        vte_terminal_spawn_async (window->terminal,
-                                  VTE_PTY_DEFAULT,
-                                  NULL,             /* working directory */
-                                  (gchar **) args->pdata,
-                                  NULL,             /* environment */
-                                  G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                                  NULL, NULL, NULL, /* child setup */
-                                  -1,               /* timeout */
-                                  NULL,             /* cancellable */
-                                  spawn_cb, window);
-    }
-}
+    g_autoptr(GPtrArray) args = g_ptr_array_new ();
+    g_ptr_array_add (args, "multipass");
+    g_ptr_array_add (args, "shell");
+    g_ptr_array_add (args, (gpointer) mp_instance_get_name (instance));
+    g_ptr_array_add (args, NULL);
+    vte_terminal_spawn_async (terminal,
+                              VTE_PTY_DEFAULT,
+                              NULL,             /* working directory */
+                              (gchar **) args->pdata,
+                              NULL,             /* environment */
+                              G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                              NULL, NULL, NULL, /* child setup */
+                              -1,               /* timeout */
+                              NULL,             /* cancellable */
+                              spawn_cb, window);
 
-static void
-start_stop_button_clicked_cb (MpWindow *window)
-{
-    MpInstanceRow *row = get_selected_row (window);
-    if (row == NULL)
-        return;
-
-    const gchar *state = mp_instance_row_get_state (row);
-    if (g_strcmp0 (state, "RUNNING") == 0)
-        mp_client_stop_async (window->client,
-                              mp_instance_row_get_name (row),
-                              window->cancellable,
-                              NULL, NULL);
-    else if (g_strcmp0 (state, "STOPPED") == 0)
-        mp_client_start_async (window->client,
-                               mp_instance_row_get_name (row),
-                               window->cancellable,
-                               NULL, NULL);
-    gtk_widget_set_sensitive (GTK_WIDGET (window->start_stop_button), FALSE);
-}
-
-static void
-delete_button_clicked_cb (MpWindow *window)
-{
-    MpInstanceRow *row = get_selected_row (window);
-    if (row == NULL)
-        return;
-
-    mp_client_delete_async (window->client,
-                            mp_instance_row_get_name (row),
-                            FALSE,
-                            window->cancellable,
-                            NULL, NULL);
+    gtk_window_present (terminal_window);
 }
 
 static void
@@ -221,20 +239,29 @@ mp_window_class_init (MpWindowClass *klass)
 
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-window.ui");
 
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, add_row);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, delete_button);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, image_box);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_label);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_listbox);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_stack);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, connect_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, create_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, details_button);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_box);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_listbox);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_stack);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, main_stack);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, no_instance_label);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, start_stop_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, running_instances_label);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, running_instances_listbox);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, running_instances_stack);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, start_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, stop_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, trash_button);
 
-    gtk_widget_class_bind_template_callback (widget_class, instance_row_activated_cb);
-    gtk_widget_class_bind_template_callback (widget_class, instance_row_selected_cb);
-    gtk_widget_class_bind_template_callback (widget_class, start_stop_button_clicked_cb);
-    gtk_widget_class_bind_template_callback (widget_class, delete_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, configured_selection_changed_cb);
+    gtk_widget_class_bind_template_callback (widget_class, connect_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, create_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, details_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, running_selection_changed_cb);
+    gtk_widget_class_bind_template_callback (widget_class, start_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, stop_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, trash_button_clicked_cb);
 }
 
 static void update_list (MpWindow *window);
@@ -260,30 +287,66 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
         return;
 
     if (instances != NULL) {
-        GHashTable *updated_rows = g_hash_table_new (g_str_hash, g_str_equal);
+        GHashTable *configured_rows = g_hash_table_new (g_str_hash, g_str_equal);
+        GHashTable *running_rows = g_hash_table_new (g_str_hash, g_str_equal);
         for (int i = 0; i < instances->len; i++) {
             MpInstance *instance = g_ptr_array_index (instances, i);
             const gchar *name = mp_instance_get_name (instance);
+            const gchar *state = mp_instance_get_state (instance);
 
-            MpInstanceRow *row = find_row (window, name);
-            if (row == NULL)
-                row = add_row (window, name, mp_instance_get_state (instance));
-            mp_instance_row_set_state (row, mp_instance_get_state (instance));
-            g_hash_table_add (updated_rows, (gpointer) name);
+            MpConfiguredInstanceRow *configured_row = find_configured_row (window, name);
+            if (configured_row == NULL) {
+                configured_row = mp_configured_instance_row_new ();
+                gtk_widget_show (GTK_WIDGET (configured_row));
+                gtk_container_add (GTK_CONTAINER (window->configured_instances_listbox), GTK_WIDGET (configured_row));
+            }
+            mp_configured_instance_row_set_instance (configured_row, instance);
+            g_hash_table_add (configured_rows, (gpointer) name);
+
+            if (g_strcmp0 (state, "STARTING") == 0 || g_strcmp0 (state, "RUNNING") == 0 || g_strcmp0 (state, "RESTARTING") == 0) {
+                MpRunningInstanceRow *running_row = find_running_row (window, name);
+                if (running_row == NULL) {
+                    running_row = mp_running_instance_row_new ();
+                    gtk_widget_show (GTK_WIDGET (running_row));
+                    gtk_container_add (GTK_CONTAINER (window->running_instances_listbox), GTK_WIDGET (running_row));
+                }
+                mp_running_instance_row_set_instance (running_row, instance);
+                g_hash_table_add (running_rows, (gpointer) name);
+            }
         }
 
         /* Remove any unused rows */
-        g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->instances_listbox));
+        g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (window->configured_instances_listbox));
         for (GList *link = children; link; link = link->next) {
-            if (!MP_IS_INSTANCE_ROW (link->data))
+            if (!MP_IS_CONFIGURED_INSTANCE_ROW (link->data))
                 continue;
 
-            MpInstanceRow *row = link->data;
-            if (g_hash_table_lookup (updated_rows, mp_instance_row_get_name (row)) == NULL)
-                gtk_container_remove (GTK_CONTAINER (window->instances_listbox), GTK_WIDGET (row));
+            MpConfiguredInstanceRow *row = link->data;
+            if (g_hash_table_lookup (configured_rows, mp_instance_get_name (mp_configured_instance_row_get_instance (row))) == NULL)
+                gtk_container_remove (GTK_CONTAINER (window->configured_instances_listbox), GTK_WIDGET (row));
+        }
+        g_autoptr(GList) running_children = gtk_container_get_children (GTK_CONTAINER (window->running_instances_listbox));
+        for (GList *link = running_children; link; link = link->next) {
+            if (!MP_IS_RUNNING_INSTANCE_ROW (link->data))
+                continue;
+
+            MpRunningInstanceRow *row = link->data;
+            if (g_hash_table_lookup (running_rows, mp_instance_get_name (mp_running_instance_row_get_instance (row))) == NULL)
+                gtk_container_remove (GTK_CONTAINER (window->running_instances_listbox), GTK_WIDGET (row));
         }
 
-        update_action_bar (window);
+        /* Show placeholders when empty rows */
+        if (g_hash_table_size (configured_rows) > 0)
+            gtk_stack_set_visible_child (window->configured_instances_stack, GTK_WIDGET (window->configured_instances_listbox));
+        else
+            gtk_stack_set_visible_child (window->configured_instances_stack, GTK_WIDGET (window->configured_instances_label));
+        if (g_hash_table_size (running_rows) > 0)
+            gtk_stack_set_visible_child (window->running_instances_stack, GTK_WIDGET (window->running_instances_listbox));
+        else
+            gtk_stack_set_visible_child (window->running_instances_stack, GTK_WIDGET (window->running_instances_label));
+
+        configured_selection_changed_cb (window);
+        running_selection_changed_cb (window);
     } else {
         g_printerr ("Failed to get instances: %s\n", error->message);
     }
@@ -303,11 +366,6 @@ void
 mp_window_init (MpWindow *window)
 {
     gtk_widget_init_template (GTK_WIDGET (window));
-
-    window->terminal = VTE_TERMINAL (vte_terminal_new ());
-    gtk_widget_show (GTK_WIDGET (window->terminal));
-    gtk_widget_set_vexpand (GTK_WIDGET (window->terminal), TRUE);
-    gtk_container_add (GTK_CONTAINER (window->image_box), GTK_WIDGET (window->terminal));
 
     window->cancellable = g_cancellable_new ();
     window->client = mp_client_new ();
