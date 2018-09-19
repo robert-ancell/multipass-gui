@@ -142,21 +142,23 @@ instance_row_selected_cb (MpWindow *window, GtkListBoxRow *row)
 
     vte_terminal_reset (window->terminal, TRUE, TRUE);
 
-    g_autoptr(GPtrArray) args = g_ptr_array_new ();
-    g_ptr_array_add (args, "multipass");
-    g_ptr_array_add (args, "shell");
-    g_ptr_array_add (args, (gpointer) mp_instance_row_get_name (r));
-    g_ptr_array_add (args, NULL);
-    vte_terminal_spawn_async (window->terminal,
-                              VTE_PTY_DEFAULT,
-                              NULL,             /* working directory */
-                              (gchar **) args->pdata,
-                              NULL,             /* environment */
-                              G_SPAWN_SEARCH_PATH,
-                              NULL, NULL, NULL, /* child setup */
-                              -1,               /* timeout */
-                              NULL,             /* cancellable */
-                              spawn_cb, window);
+    if (g_strcmp0 (mp_instance_row_get_state (r), "RUNNING") == 0) {
+        g_autoptr(GPtrArray) args = g_ptr_array_new ();
+        g_ptr_array_add (args, "multipass");
+        g_ptr_array_add (args, "shell");
+        g_ptr_array_add (args, (gpointer) mp_instance_row_get_name (r));
+        g_ptr_array_add (args, NULL);
+        vte_terminal_spawn_async (window->terminal,
+                                  VTE_PTY_DEFAULT,
+                                  NULL,             /* working directory */
+                                  (gchar **) args->pdata,
+                                  NULL,             /* environment */
+                                  G_SPAWN_SEARCH_PATH,
+                                  NULL, NULL, NULL, /* child setup */
+                                  -1,               /* timeout */
+                                  NULL,             /* cancellable */
+                                  spawn_cb, window);
+    }
 }
 
 static void
