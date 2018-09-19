@@ -61,7 +61,7 @@
               <object class="GtkStack" id="instances_stack">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="no_instance_label">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">No instances setup, please launch one!</property>
                   </object>
@@ -69,6 +69,42 @@
                 <child>
                   <object class="GtkBox" id="image_box">
                     <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkActionBar">
+                        <property name="visible">True</property>
+                        <child type="center">
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="spacing">12</property>
+                            <property name="homogeneous">True</property>
+                            <child>
+                              <object class="GtkButton" id="start_stop_button">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Start</property>
+                                <signal name="clicked" handler="start_stop_button_clicked_cb" object="MpWindow" swapped="yes"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="visible">True</property>
+                                <signal name="clicked" handler="delete_button_clicked_cb" object="MpWindow" swapped="yes"/>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="icon_name">edit-delete-symbolic</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="pack_type">end</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
               </object>
