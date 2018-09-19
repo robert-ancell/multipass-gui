@@ -66,9 +66,11 @@ get_selected_row (MpWindow *window)
 }
 
 static MpInstanceRow *
-add_row (MpWindow *window, const gchar *name)
+add_row (MpWindow *window, const gchar *name, const gchar *state)
 {
     MpInstanceRow *row = mp_instance_row_new (name);
+    if (state != NULL)
+        mp_instance_row_set_state (row, state);
     gtk_widget_show (GTK_WIDGET (row));
     gtk_list_box_insert (window->instances_listbox, GTK_WIDGET (row), gtk_list_box_row_get_index (window->add_row));
 
@@ -91,7 +93,7 @@ instance_row_activated_cb (MpWindow *window, GtkListBoxRow *row)
 
             mp_client_launch_async (window->client, name, image_name, window->cancellable, NULL, window);
 
-            add_row (window, name);
+            add_row (window, name, NULL);
         }
 
         gtk_widget_destroy (GTK_WIDGET (dialog));
@@ -264,7 +266,7 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 
             MpInstanceRow *row = find_row (window, name);
             if (row == NULL)
-                row = add_row (window, name);
+                row = add_row (window, name, mp_instance_get_state (instance));
             mp_instance_row_set_state (row, mp_instance_get_state (instance));
             g_hash_table_add (updated_rows, (gpointer) name);
         }
