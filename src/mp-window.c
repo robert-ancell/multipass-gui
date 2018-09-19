@@ -22,6 +22,7 @@ struct _MpWindow
     GtkWindow      parent_instance;
 
     GtkListBoxRow *add_row;
+    GtkButton     *delete_button;
     GtkBox        *image_box;
     GtkBox        *instances_box;
     GtkListBox    *instances_listbox;
@@ -119,6 +120,8 @@ update_action_bar (MpWindow *window)
     }
     else
         gtk_widget_set_sensitive (GTK_WIDGET (window->start_stop_button), FALSE);
+
+    gtk_widget_set_sensitive (GTK_WIDGET (window->delete_button), g_strcmp0 (state, "DELETED") != 0);
 }
 
 static void
@@ -214,6 +217,7 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_set_template_from_resource (widget_class, "/com/ubuntu/multipass/mp-window.ui");
 
     gtk_widget_class_bind_template_child (widget_class, MpWindow, add_row);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, delete_button);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, image_box);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_box);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_listbox);

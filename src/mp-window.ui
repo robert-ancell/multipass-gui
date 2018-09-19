@@ -87,7 +87,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkButton">
+                              <object class="GtkButton" id="delete_button">
                                 <property name="visible">True</property>
                                 <signal name="clicked" handler="delete_button_clicked_cb" object="MpWindow" swapped="yes"/>
                                 <child>
