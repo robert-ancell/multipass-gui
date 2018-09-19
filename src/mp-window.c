@@ -169,7 +169,11 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
     MpWindow *window = user_data;
 
     g_autoptr(GError) error = NULL;
-    g_autoptr(GPtrArray) instances = mp_client_list_finish (window->client, result, &error);
+    g_autoptr(GPtrArray) instances = mp_client_list_finish (MP_CLIENT (client), result, &error);
+
+    if (instances == NULL && g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+        return;
+
     if (instances != NULL) {
         GHashTable *updated_rows = g_hash_table_new (g_str_hash, g_str_equal);
         for (int i = 0; i < instances->len; i++) {
