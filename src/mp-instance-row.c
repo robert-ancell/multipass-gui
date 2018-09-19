@@ -16,6 +16,7 @@ struct _MpInstanceRow
 
     GtkImage      *image;
     GtkLabel      *label;
+    GtkSpinner    *spinner;
 
     gchar         *name;
     gchar         *state;
@@ -46,6 +47,7 @@ mp_instance_row_class_init (MpInstanceRowClass *klass)
 
     gtk_widget_class_bind_template_child (widget_class, MpInstanceRow, image);
     gtk_widget_class_bind_template_child (widget_class, MpInstanceRow, label);
+    gtk_widget_class_bind_template_child (widget_class, MpInstanceRow, spinner);
 }
 
 void
@@ -80,12 +82,15 @@ mp_instance_row_set_state (MpInstanceRow *row, const gchar *state)
     row->state = g_strdup (state);
 
     gtk_widget_show (GTK_WIDGET (row->image));
+    gtk_widget_hide (GTK_WIDGET (row->spinner));
     if (strcmp (state, "RUNNING") == 0)
         gtk_image_set_from_icon_name (row->image, "media-playback-start-symbolic", GTK_ICON_SIZE_BUTTON);
     else if (strcmp (state, "STOPPED") == 0)
         gtk_image_set_from_icon_name (row->image, "media-playback-stop-symbolic", GTK_ICON_SIZE_BUTTON);
-    else
+    else {
         gtk_widget_hide (GTK_WIDGET (row->image));
+        gtk_widget_show (GTK_WIDGET (row->spinner));
+    }
 }
 
 const gchar *
