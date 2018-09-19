@@ -142,6 +142,7 @@ instance_row_selected_cb (MpWindow *window, GtkListBoxRow *row)
 
     update_action_bar (window);
 
+    vte_terminal_set_pty (window->terminal, NULL);
     vte_terminal_reset (window->terminal, TRUE, TRUE);
 
     if (g_strcmp0 (mp_instance_row_get_state (r), "RUNNING") == 0) {
@@ -155,7 +156,7 @@ instance_row_selected_cb (MpWindow *window, GtkListBoxRow *row)
                                   NULL,             /* working directory */
                                   (gchar **) args->pdata,
                                   NULL,             /* environment */
-                                  G_SPAWN_SEARCH_PATH,
+                                  G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
                                   NULL, NULL, NULL, /* child setup */
                                   -1,               /* timeout */
                                   NULL,             /* cancellable */
