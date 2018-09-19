@@ -10,3 +10,6 @@ script:
   - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-26-1604 bash`
   - docker exec $cid apt update
   - docker exec $cid snapcraft
+  - docker exec $cid echo $SNAP_TOKEN | snapcraft login --with -
+  - docker exec $cid snapcraft push multipass-gui*.snap --release edge
+  - docker exec $cid snapcraft logout
