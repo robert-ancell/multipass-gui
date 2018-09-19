@@ -69,7 +69,8 @@ find_cb (GObject *client, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     g_auto(GStrv) image_names = mp_client_find_finish (MP_CLIENT (client), result, &error);
     if (image_names == NULL) {
-        g_printerr ("Failed to get images: %s\n", error->message);
+        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            g_printerr ("Failed to get images: %s\n", error->message);
         return;
     }
 
