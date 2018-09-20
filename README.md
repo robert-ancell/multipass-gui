@@ -5,5 +5,5 @@ A graphical interface to [Multipass](https://github.com/CanonicalLtd/multipass).
 
 Install with:
 ```
-$ snap install multipass-gui
+$ snap install multipass-gui --classic
 ```
