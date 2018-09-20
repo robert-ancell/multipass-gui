@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="MpLaunchDialog" parent="GtkDialog">
-    <property name="title" translatable="yes">Create Ubutu Instance</property>
+    <property name="title" translatable="yes">Launch Ubuntu Instance</property>
     <property name="resizable">False</property>
     <child type="action">
       <object class="GtkButton" id="launch_button">
         <property name="visible">True</property>
-        <property name="label" translatable="yes">_Create &amp; Start</property>
+        <property name="label" translatable="yes">_Launch</property>
         <property name="use_underline">True</property>
         <property name="can_default">True</property>
       </object>

@@ -81,7 +81,7 @@
                 <child>
                   <object class="GtkButton" id="create_button">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Create…</property>
+                    <property name="label" translatable="yes">Launch…</property>
                     <signal name="clicked" handler="create_button_clicked_cb" object="MpWindow" swapped="yes"/>
                   </object>
                 </child>
