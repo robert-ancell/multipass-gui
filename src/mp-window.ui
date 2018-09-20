@@ -158,11 +158,11 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkButton" id="connect_button">
+                  <object class="GtkButton" id="shell_button">
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
-                    <property name="label" translatable="yes">Connect</property>
-                    <signal name="clicked" handler="connect_button_clicked_cb" object="MpWindow" swapped="yes"/>
+                    <property name="label" translatable="yes">Shell</property>
+                    <signal name="clicked" handler="shell_button_clicked_cb" object="MpWindow" swapped="yes"/>
                   </object>
                   <packing>
                     <property name="pack_type">end</property>
@@ -205,7 +205,7 @@
       <widget name="trash_button" />
       <widget name="start_button" />
       <widget name="stop_button" />
-      <widget name="connect_button" />
+      <widget name="shell_button" />
       <widget name="details_button" />
     </widgets>
   </object>

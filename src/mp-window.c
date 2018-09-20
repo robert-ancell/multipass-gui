@@ -26,7 +26,7 @@ struct _MpWindow
     GtkLabel      *configured_instances_label;
     GtkListBox    *configured_instances_listbox;
     GtkStack      *configured_instances_stack;
-    GtkButton     *connect_button;
+    GtkButton     *shell_button;
     GtkButton     *create_button;
     GtkButton     *details_button;
     GtkBox        *instances_box;
@@ -101,7 +101,7 @@ running_selection_changed_cb (MpWindow *window)
 
     gtk_widget_set_sensitive (GTK_WIDGET (window->stop_button), selected_rows != NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (window->details_button), selected_rows != NULL);
-    gtk_widget_set_sensitive (GTK_WIDGET (window->connect_button), selected_rows != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (window->shell_button), selected_rows != NULL);
 }
 
 static void
@@ -182,7 +182,7 @@ spawn_cb (VteTerminal *terminal, GPid pid, GError *error, gpointer user_data)
 }
 
 static void
-connect_button_clicked_cb (MpWindow *window)
+shell_button_clicked_cb (MpWindow *window)
 {
     MpRunningInstanceRow *row = MP_RUNNING_INSTANCE_ROW (gtk_list_box_get_selected_row (window->running_instances_listbox));
     MpInstance *instance = mp_running_instance_row_get_instance (row);
@@ -242,7 +242,7 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_label);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_listbox);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, configured_instances_stack);
-    gtk_widget_class_bind_template_child (widget_class, MpWindow, connect_button);
+    gtk_widget_class_bind_template_child (widget_class, MpWindow, shell_button);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, create_button);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, details_button);
     gtk_widget_class_bind_template_child (widget_class, MpWindow, instances_box);
@@ -255,7 +255,7 @@ mp_window_class_init (MpWindowClass *klass)
     gtk_widget_class_bind_template_child (widget_class, MpWindow, trash_button);
 
     gtk_widget_class_bind_template_callback (widget_class, configured_selection_changed_cb);
-    gtk_widget_class_bind_template_callback (widget_class, connect_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (widget_class, shell_button_clicked_cb);
     gtk_widget_class_bind_template_callback (widget_class, create_button_clicked_cb);
     gtk_widget_class_bind_template_callback (widget_class, details_button_clicked_cb);
     gtk_widget_class_bind_template_callback (widget_class, running_selection_changed_cb);
