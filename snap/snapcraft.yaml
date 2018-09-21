@@ -14,7 +14,6 @@ apps:
 
 parts:
   multipass-gui:
-    build-attributes: ['no-system-libraries']
     after: [desktop-gtk3]
     plugin: meson
     meson-parameters: [--prefix=/usr]
