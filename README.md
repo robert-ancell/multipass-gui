@@ -7,3 +7,13 @@ Install with:
 ```
 $ snap install multipass-gui --classic
 ```
+
+Build with:
+```
+$ snap install snapcraft --edge --classic
+$ snap install multipass --edge --classic
+$ export SNAPCRAFT_BUILD_ENVIRONMENT=multipass
+$ git clone git@github.com:robert-ancell/multipass-gui
+$ cd multipass-gui
+$ snapcraft
+```
