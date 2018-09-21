@@ -4,6 +4,7 @@ summary: Multipass
 description: |
   Multipass allows you to to quickly launch Ubuntu virtual machines.
 
+base: core18
 grade: stable
 confinement: classic
 
