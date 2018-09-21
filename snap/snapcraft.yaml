@@ -11,7 +11,7 @@ confinement: classic
 
 apps:
   multipass-gui:
-    command: bin/classic-launch classic ${SNAP}/usr/bin/multipass-gui
+    command: usr/bin/multipass-gui
     desktop: usr/share/applications/multipass-gui.desktop
 
 parts:
@@ -30,9 +30,3 @@ parts:
       - libvte-2.91-dev
     stage-packages:
       - libvte-2.91-0
-  clasic-launch:
-    plugin: dump
-    source: ./snap
-    organize:
-      classic-launch: bin/classic-launch
-
