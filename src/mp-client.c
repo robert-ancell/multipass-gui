@@ -125,6 +125,12 @@ list_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
+        return;
+    }
+
     g_auto(GStrv) lines = g_strsplit (output, "\n", -1);
     g_autoptr(GPtrArray) instances = g_ptr_array_new_with_free_func (g_object_unref);
     for (int i = 0; lines[i] != NULL; i++) {
@@ -180,6 +186,12 @@ find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
         g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
         return;
     }
 
@@ -239,6 +251,12 @@ launch_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
+        return;
+    }
+
     g_task_return_boolean (task, TRUE);
 }
 
@@ -273,6 +291,12 @@ start_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
         g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
         return;
     }
 
@@ -313,6 +337,12 @@ stop_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
+        return;
+    }
+
     g_task_return_boolean (task, TRUE);
 }
 
@@ -350,6 +380,12 @@ delete_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
+        return;
+    }
+
     g_task_return_boolean (task, TRUE);
 }
 
@@ -384,6 +420,12 @@ recover_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     if (!g_subprocess_communicate_utf8_finish (subprocess, result, &output, NULL, &error)) {
         g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    gint exit_status = g_subprocess_get_exit_status (subprocess);
+    if (exit_status != 0) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "multipass returned exit status %d", exit_status);
         return;
     }
 
