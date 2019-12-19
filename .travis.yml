@@ -10,6 +10,6 @@ script:
   - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-28-1804 bash`
   - docker exec $cid apt update
   - docker exec $cid snapcraft
-  - if [ "SNAP_TOKEN" -a "TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "echo $SNAP_TOKEN | snapcraft login --with -"; fi
-  - if [ "SNAP_TOKEN" -a "TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft push multipass-gui*.snap --release edge; fi
-  - if [ "SNAP_TOKEN" -a "TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft logout; fi
+  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "echo $SNAP_TOKEN | snapcraft login --with -"; fi
+  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft push multipass-gui*.snap --release edge; fi
+  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft logout; fi
