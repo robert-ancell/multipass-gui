@@ -68,7 +68,7 @@ mp_configured_instance_row_set_instance (MpConfiguredInstanceRow *row, MpInstanc
     gtk_label_set_label (row->label, mp_instance_get_name (instance));
 
     const gchar *state = mp_instance_get_state (instance);
-    if (g_strcmp0 (state, "DELETED") == 0)
+    if (g_strcmp0 (state, "Deleted") == 0)
         gtk_image_set_from_icon_name (row->image, "action-unavailable-symbolic", GTK_ICON_SIZE_BUTTON);
     else
         gtk_image_set_from_icon_name (row->image, "computer-symbolic", GTK_ICON_SIZE_BUTTON);

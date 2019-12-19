@@ -89,7 +89,7 @@ configured_selection_changed_cb (MpWindow *window)
     if (selected_rows != NULL) {
         MpConfiguredInstanceRow *row = MP_CONFIGURED_INSTANCE_ROW (gtk_list_box_get_selected_row (window->configured_instances_listbox));
         MpInstance *instance = mp_configured_instance_row_get_instance (row);
-        if (g_strcmp0 (mp_instance_get_state (instance), "DELETED") == 0)
+        if (g_strcmp0 (mp_instance_get_state (instance), "Deleted") == 0)
             gtk_button_set_label (window->trash_button, _("Recover"));
     }
 }
@@ -126,7 +126,7 @@ trash_button_clicked_cb (MpWindow *window)
     MpConfiguredInstanceRow *row = MP_CONFIGURED_INSTANCE_ROW (gtk_list_box_get_selected_row (window->configured_instances_listbox));
     MpInstance *instance = mp_configured_instance_row_get_instance (row);
 
-    if (g_strcmp0 (mp_instance_get_state (instance), "DELETED") == 0)
+    if (g_strcmp0 (mp_instance_get_state (instance), "Deleted") == 0)
         mp_client_recover_async (window->client,
                                  mp_instance_get_name (instance),
                                  window->cancellable,
@@ -303,7 +303,7 @@ list_cb (GObject *client, GAsyncResult *result, gpointer user_data)
             mp_configured_instance_row_set_instance (configured_row, instance);
             g_hash_table_add (configured_rows, (gpointer) name);
 
-            if (g_strcmp0 (state, "STARTING") == 0 || g_strcmp0 (state, "RUNNING") == 0 || g_strcmp0 (state, "RESTARTING") == 0) {
+            if (g_strcmp0 (state, "Starting") == 0 || g_strcmp0 (state, "Running") == 0 || g_strcmp0 (state, "Restarting") == 0) {
                 MpRunningInstanceRow *running_row = find_running_row (window, name);
                 if (running_row == NULL) {
                     running_row = mp_running_instance_row_new ();
