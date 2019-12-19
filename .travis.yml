@@ -6,8 +6,8 @@ services:
 language: c
 
 script:
-  - docker pull ubuntudesktop/gnome-3-26-1604
-  - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-26-1604 bash`
+  - docker pull ubuntudesktop/gnome-3-28-1804
+  - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-28-1804 bash`
   - docker exec $cid apt update
   - docker exec $cid snapcraft
   - if [ "SNAP_TOKEN" -a "TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "echo $SNAP_TOKEN | snapcraft login --with -"; fi
