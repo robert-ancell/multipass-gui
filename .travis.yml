@@ -10,6 +10,7 @@ script:
   - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/multipass-gui --workdir /multipass-gui ubuntudesktop/gnome-3-28-1804 bash`
   - docker exec $cid apt update
   - docker exec $cid snapcraft
-  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "echo $SNAP_TOKEN | snapcraft login --with -"; fi
-  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft push multipass-gui*.snap --release edge; fi
-  - if [ -n "$SNAP_TOKEN" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft logout; fi
+  - if [ -n "$encrypted_4266e9dfa90e_key" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "openssl aes-256-cbc -K $encrypted_4266e9dfa90e_key -iv $encrypted_4266e9dfa90e_iv -in snap-store.key.enc -out snap-store.key -d"; fi
+  - if [ -n "$encrypted_4266e9dfa90e_key" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid bash -c "snapcraft login --with snap-store.key"; fi
+  - if [ -n "$encrypted_4266e9dfa90e_key" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft push multipass-gui*.snap --release edge; fi
+  - if [ -n "$encrypted_4266e9dfa90e_key" -a "$TRAVIS_PULL_REQUEST" = false -a "$TRAVIS_BRANCH" = "master" ]; then docker exec $cid snapcraft logout; fi
